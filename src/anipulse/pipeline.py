@@ -17,13 +17,21 @@ from .sources import XSampleSource
 class PipelineResult:
     drafts: list[ContentDraft]
     notion_page_ids: list[str]
+    resend_email_id: str | None = None
+    resend_skipped_reason: str | None = None
 
 
 class AniPulsePipeline:
     def __init__(self, settings: Settings) -> None:
         self.settings = settings
 
-    def run(self, dry_run: bool, limit: int | None = None) -> PipelineResult:
+    def run(
+        self,
+        dry_run: bool,
+        limit: int | None = None,
+        write_notion: bool | None = None,
+        send_email: bool | None = None,
+    ) -> PipelineResult:
         samples = XSampleSource(self.settings.source_file).load()
         animesphere = AnimeSphereClient(self.settings.animesphere_search_url)
         candidates = TrendAnalyzer(animesphere).analyze(samples)
@@ -36,16 +44,24 @@ class AniPulsePipeline:
             self.settings.openai_model,
         ).generate(planned)
 
+        should_write_notion = (not dry_run) if write_notion is None else write_notion
+        should_send_email = (not dry_run) if send_email is None else send_email
+
         notion_ids = NotionCalendarWriter(
             self.settings.notion_token,
             self.settings.notion_content_calendar_db_id,
             self.settings.notion_fallback_page_id,
-        ).write(drafts, dry_run=dry_run)
+        ).write(drafts, dry_run=not should_write_notion)
 
-        ResendDigestMailer(
+        email_result = ResendDigestMailer(
             self.settings.resend_api_key,
             self.settings.resend_from_email,
             self.settings.resend_to_email,
-        ).send(drafts, dry_run=dry_run)
+        ).send(drafts, enabled=should_send_email)
 
-        return PipelineResult(drafts=drafts, notion_page_ids=notion_ids)
+        return PipelineResult(
+            drafts=drafts,
+            notion_page_ids=notion_ids,
+            resend_email_id=email_result.email_id,
+            resend_skipped_reason=email_result.skipped_reason,
+        )

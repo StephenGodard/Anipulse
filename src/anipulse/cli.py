@@ -25,6 +25,21 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write to Notion and send the Resend digest. Overrides ANIPULSE_DRY_RUN.",
     )
     parser.add_argument(
+        "--send-email",
+        action="store_true",
+        help="Send the Resend digest without requiring Notion writes.",
+    )
+    parser.add_argument(
+        "--skip-notion",
+        action="store_true",
+        help="Do not write Notion pages, even with --write.",
+    )
+    parser.add_argument(
+        "--skip-email",
+        action="store_true",
+        help="Do not send the Resend digest, even with --write.",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
@@ -47,8 +62,16 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
     settings = load_settings()
-    dry_run = args.dry_run or (settings.default_dry_run and not args.write)
-    result = AniPulsePipeline(settings).run(dry_run=dry_run, limit=args.limit)
+    wants_side_effect = args.write or args.send_email
+    dry_run = args.dry_run or (settings.default_dry_run and not wants_side_effect)
+    write_notion = args.write and not args.skip_notion
+    send_email = (args.write or args.send_email) and not args.skip_email
+    result = AniPulsePipeline(settings).run(
+        dry_run=dry_run,
+        limit=args.limit,
+        write_notion=write_notion,
+        send_email=send_email,
+    )
 
     export_dir = args.export_dir
     if export_dir:
@@ -69,6 +92,13 @@ def main() -> None:
             print(f"- Notion page: https://app.notion.com/p/{page_id.replace('-', '')}")
     elif dry_run:
         print("Dry-run enabled: no Notion page or Resend email was created.")
+    elif args.skip_notion:
+        print("Notion write skipped.")
+
+    if result.resend_email_id:
+        print(f"Sent Resend email: {result.resend_email_id}")
+    elif result.resend_skipped_reason and not dry_run:
+        print(f"Resend email skipped: {result.resend_skipped_reason}")
 
 
 if __name__ == "__main__":

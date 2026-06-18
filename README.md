@@ -67,6 +67,12 @@ Export de secours JSON + Markdown:
 anipulse --dry-run --export-dir exports
 ```
 
+Test email Resend sans recreer d'events Notion:
+
+```bash
+anipulse --send-email --skip-notion --limit 4 --export-dir exports
+```
+
 ## Execution quotidienne
 
 Un workflow GitHub Actions est disponible dans `.github/workflows/anipulse-daily.yml`.
