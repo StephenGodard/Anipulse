@@ -14,6 +14,8 @@ except ModuleNotFoundError:
 @dataclass(frozen=True)
 class Settings:
     source_file: Path
+    export_dir: Path
+    default_dry_run: bool
     daily_limit: int
     timezone: str
     animesphere_search_url: str
@@ -38,6 +40,8 @@ def load_settings() -> Settings:
     load_dotenv()
     return Settings(
         source_file=Path(os.getenv("ANIPULSE_SOURCE_FILE", "data/x_samples.json")),
+        export_dir=Path(os.getenv("ANIPULSE_EXPORT_DIR", "exports")),
+        default_dry_run=_env_bool("ANIPULSE_DRY_RUN", default=True),
         daily_limit=int(os.getenv("ANIPULSE_DAILY_LIMIT", "4")),
         timezone=os.getenv("ANIPULSE_TIMEZONE", "Europe/Paris"),
         animesphere_search_url=os.getenv(
@@ -52,3 +56,10 @@ def load_settings() -> Settings:
         resend_from_email=os.getenv("RESEND_FROM_EMAIL") or None,
         resend_to_email=os.getenv("RESEND_TO_EMAIL") or None,
     )
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}

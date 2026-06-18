@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
 from .config import load_settings
+from .exporter import DraftExporter
 from .pipeline import AniPulsePipeline
 
 
@@ -18,6 +20,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print planned content without writing to Notion.",
     )
     parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Write to Notion and send the Resend digest. Overrides ANIPULSE_DRY_RUN.",
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
@@ -28,6 +35,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print planned content as JSON.",
     )
+    parser.add_argument(
+        "--export-dir",
+        default=None,
+        help="Write JSON and Markdown exports to this directory.",
+    )
     return parser
 
 
@@ -35,7 +47,14 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
     settings = load_settings()
-    result = AniPulsePipeline(settings).run(dry_run=args.dry_run, limit=args.limit)
+    dry_run = args.dry_run or (settings.default_dry_run and not args.write)
+    result = AniPulsePipeline(settings).run(dry_run=dry_run, limit=args.limit)
+
+    export_dir = args.export_dir
+    if export_dir:
+        export_result = DraftExporter(settings.export_dir if export_dir == "default" else Path(export_dir)).export(result.drafts)
+        print(f"Exported JSON: {export_result.json_path}")
+        print(f"Exported Markdown: {export_result.markdown_path}")
 
     if args.json:
         print(json.dumps([draft.model_dump(mode="json") for draft in result.drafts], indent=2, ensure_ascii=False))
@@ -46,7 +65,7 @@ def main() -> None:
         print(draft.digest_line())
     if result.notion_page_ids:
         print(f"Created {len(result.notion_page_ids)} Notion page(s).")
-    elif args.dry_run:
+    elif dry_run:
         print("Dry-run enabled: no Notion page or Resend email was created.")
 
 

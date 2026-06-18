@@ -57,8 +57,24 @@ anipulse --dry-run --json
 Ecriture Notion + email, si les variables sont configurees:
 
 ```bash
-anipulse
+anipulse --write
 ```
+
+Export de secours JSON + Markdown:
+
+```bash
+anipulse --dry-run --export-dir exports
+```
+
+## Execution quotidienne
+
+Un workflow GitHub Actions est disponible dans `.github/workflows/anipulse-daily.yml`.
+Par defaut il tourne en dry-run via `ANIPULSE_DRY_RUN=true`.
+
+Pour activer l'ecriture Notion et le recap Resend, configurer:
+
+- secrets: `OPENAI_API_KEY`, `NOTION_TOKEN`, `NOTION_CONTENT_CALENDAR_DB_ID`, `RESEND_API_KEY`;
+- variables: `ANIPULSE_DRY_RUN=false`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`.
 
 ## Nice-to-have
 

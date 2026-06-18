@@ -1,0 +1,33 @@
+name: AniPulse daily planning
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 6 * * *"
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install AniPulse
+        run: python -m pip install -e .
+      - name: Run AniPulse
+        env:
+          ANIPULSE_DRY_RUN: ${{ vars.ANIPULSE_DRY_RUN || 'true' }}
+          ANIPULSE_DAILY_LIMIT: ${{ vars.ANIPULSE_DAILY_LIMIT || '4' }}
+          ANIPULSE_TIMEZONE: Europe/Paris
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_CONTENT_CALENDAR_DB_ID: ${{ secrets.NOTION_CONTENT_CALENDAR_DB_ID }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ vars.RESEND_FROM_EMAIL }}
+          RESEND_TO_EMAIL: ${{ vars.RESEND_TO_EMAIL }}
+        run: anipulse --export-dir exports
+      - uses: actions/upload-artifact@v4
+        with:
+          name: anipulse-exports
+          path: exports/

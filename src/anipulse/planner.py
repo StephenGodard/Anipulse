@@ -19,13 +19,12 @@ class ContentPlanner:
         self.timezone = ZoneInfo(timezone)
 
     def plan(self, candidates: list[TrendCandidate], limit: int) -> list[ContentDraft]:
-        today = datetime.now(self.timezone).date()
         selected = candidates[:limit]
+        scheduled_slots = self._next_slots(len(selected))
         drafts: list[ContentDraft] = []
 
-        for index, candidate in enumerate(selected):
-            platform, content_type, slot = CONTENT_SLOTS[index % len(CONTENT_SLOTS)]
-            scheduled_at = datetime.combine(today + timedelta(days=index // 4), slot, self.timezone)
+        for candidate, scheduled_slot in zip(selected, scheduled_slots, strict=True):
+            platform, content_type, scheduled_at = scheduled_slot
             drafts.append(
                 ContentDraft(
                     platform=platform,
@@ -42,6 +41,24 @@ class ContentPlanner:
             )
 
         return drafts
+
+    def _next_slots(self, count: int) -> list[tuple[Platform, ContentType, datetime]]:
+        now = datetime.now(self.timezone)
+        slots: list[tuple[Platform, ContentType, datetime]] = []
+        day_offset = 0
+
+        while len(slots) < count:
+            current_date = now.date() + timedelta(days=day_offset)
+            for platform, content_type, slot in CONTENT_SLOTS:
+                scheduled_at = datetime.combine(current_date, slot, self.timezone)
+                if scheduled_at <= now:
+                    continue
+                slots.append((platform, content_type, scheduled_at))
+                if len(slots) == count:
+                    break
+            day_offset += 1
+
+        return slots
 
     def _title(self, platform: Platform, anime_title: str) -> str:
         if platform == "SEO":
