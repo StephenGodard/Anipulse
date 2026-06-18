@@ -1,0 +1,58 @@
+[
+  {
+    "source_account": "shirotaku_fr",
+    "posted_at": "2026-06-18T10:00:00+02:00",
+    "text": "LE PLUS GRAND EPISODE DE RE ZERO JE VEUX RIEN SAVOIR",
+    "candidate_titles": ["Re:Zero"],
+    "metrics": {
+      "likes": 566,
+      "reposts": 70,
+      "replies": 15,
+      "views": 9300
+    },
+    "media_count": 4,
+    "url": "https://x.com/Shirotaku_fr/status/example-rezero"
+  },
+  {
+    "source_account": "shirotaku_fr",
+    "posted_at": "2026-06-18T09:00:00+02:00",
+    "text": "Mais l'episode de classroom of the elite c'est quoi ce banger ???? Il se passe enormement choses je suis choque le meilleur episode de la saison facile",
+    "candidate_titles": ["Classroom of the Elite"],
+    "metrics": {
+      "likes": 496,
+      "reposts": 47,
+      "replies": 12,
+      "views": 16000
+    },
+    "media_count": 4,
+    "url": "https://x.com/Shirotaku_fr/status/example-classroom"
+  },
+  {
+    "source_account": "animotaku_fr",
+    "posted_at": "2026-06-18T08:30:00+02:00",
+    "text": "Nouveau visuel pour la prochaine saison de Black Clover, la hype remonte fort cote commu",
+    "candidate_titles": ["Black Clover"],
+    "metrics": {
+      "likes": 221,
+      "reposts": 21,
+      "replies": 8,
+      "views": 4600
+    },
+    "media_count": 1,
+    "url": "https://x.com/animotaku_fr/status/example-black-clover"
+  },
+  {
+    "source_account": "Tokanim_FR",
+    "posted_at": "2026-06-18T08:00:00+02:00",
+    "text": "Une saison 2 pour Marriagetoxin c'est parfait, l'anime est vraiment une belle surprise",
+    "candidate_titles": ["Marriagetoxin"],
+    "metrics": {
+      "likes": 443,
+      "reposts": 19,
+      "replies": 4,
+      "views": 10000
+    },
+    "media_count": 1,
+    "url": "https://x.com/Tokanim_FR/status/example-marriagetoxin"
+  }
+]

@@ -15,11 +15,50 @@ AniPulse ne publie pas automatiquement. Il prepare, programme et met les contenu
 
 Le MVP est volontairement Python-first:
 
-1. Lire la configuration de contenu.
-2. Generer un lot quotidien limite.
-3. Creer les entrees dans Notion.
-4. Programmer les dates de publication.
-5. Laisser la validation humaine avant publication.
+1. Lire `data/x_samples.json`, compose de posts X copies/colles.
+2. Verifier que les anime detectes existent sur AnimeSphere via `https://animesphere.io/api/anime/search?title=`.
+3. Scorer les opportunites selon la pertinence AnimeSphere et les signaux fan/react.
+4. Generer 4 contenus par run: 1 SEO, 1 TikTok, 2 X/Twitter.
+5. Creer une page Notion par contenu dans le planning global avec le statut `A valider`.
+6. Envoyer un recap email via Resend quand la configuration est presente.
+7. Laisser la validation humaine avant publication.
+
+## Installation
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e .
+cp .env.example .env
+```
+
+## Configuration
+
+Les secrets restent dans `.env`:
+
+- `OPENAI_API_KEY`: active la generation LLM. Sans cle, AniPulse utilise un brouillon de fallback pour la demo.
+- `NOTION_TOKEN` et `NOTION_CONTENT_CALENDAR_DB_ID`: activent l'ecriture dans le planning Notion.
+- `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`: activent le recap email.
+
+## Utilisation
+
+Dry-run lisible:
+
+```bash
+anipulse --dry-run
+```
+
+Dry-run JSON:
+
+```bash
+anipulse --dry-run --json
+```
+
+Ecriture Notion + email, si les variables sont configurees:
+
+```bash
+anipulse
+```
 
 ## Nice-to-have
 
