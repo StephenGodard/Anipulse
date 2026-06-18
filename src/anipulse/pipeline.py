@@ -10,7 +10,7 @@ from .generator import ContentGenerator
 from .models import ContentDraft
 from .notion import NotionCalendarWriter
 from .planner import ContentPlanner
-from .sources import XSampleSource
+from .sources import XApiSource, XSampleSource
 
 
 @dataclass(frozen=True)
@@ -32,7 +32,7 @@ class AniPulsePipeline:
         write_notion: bool | None = None,
         send_email: bool | None = None,
     ) -> PipelineResult:
-        samples = XSampleSource(self.settings.source_file).load()
+        samples = self._load_samples()
         animesphere = AnimeSphereClient(self.settings.animesphere_search_url)
         candidates = TrendAnalyzer(animesphere).analyze(samples)
         planned = ContentPlanner(self.settings.timezone).plan(
@@ -65,3 +65,15 @@ class AniPulsePipeline:
             resend_email_id=email_result.email_id,
             resend_skipped_reason=email_result.skipped_reason,
         )
+
+    def _load_samples(self):
+        if self.settings.source == "x-api":
+            if not self.settings.x_bearer_token:
+                raise RuntimeError("X_BEARER_TOKEN is required when ANIPULSE_SOURCE=x-api.")
+            return XApiSource(
+                bearer_token=self.settings.x_bearer_token,
+                accounts=self.settings.x_accounts,
+                tracked_titles=self.settings.tracked_titles,
+                max_results=self.settings.x_max_results,
+            ).load()
+        return XSampleSource(self.settings.source_file).load()

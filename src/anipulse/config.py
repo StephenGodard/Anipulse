@@ -13,12 +13,17 @@ except ModuleNotFoundError:
 
 @dataclass(frozen=True)
 class Settings:
+    source: str
     source_file: Path
     export_dir: Path
     default_dry_run: bool
     daily_limit: int
     timezone: str
     animesphere_search_url: str
+    x_bearer_token: str | None
+    x_accounts: list[str]
+    x_max_results: int
+    tracked_titles: list[str]
     openai_api_key: str | None
     openai_model: str
     notion_token: str | None
@@ -40,6 +45,7 @@ class Settings:
 def load_settings() -> Settings:
     load_dotenv()
     return Settings(
+        source=os.getenv("ANIPULSE_SOURCE", "sample"),
         source_file=Path(os.getenv("ANIPULSE_SOURCE_FILE", "data/x_samples.json")),
         export_dir=Path(os.getenv("ANIPULSE_EXPORT_DIR", "exports")),
         default_dry_run=_env_bool("ANIPULSE_DRY_RUN", default=True),
@@ -48,6 +54,13 @@ def load_settings() -> Settings:
         animesphere_search_url=os.getenv(
             "ANIMESPHERE_SEARCH_URL",
             "https://animesphere.io/api/anime/search?title=",
+        ),
+        x_bearer_token=os.getenv("X_API_TOKEN") or os.getenv("X_BEARER_TOKEN") or None,
+        x_accounts=_env_list("X_ACCOUNTS", default="shirotaku_fr,Tokanim_FR,gaak_fr,animotaku_fr"),
+        x_max_results=int(os.getenv("X_MAX_RESULTS", "10")),
+        tracked_titles=_env_list(
+            "ANIPULSE_TRACKED_TITLES",
+            default="Re:Zero,Classroom of the Elite,Black Clover,Marriagetoxin,MARRIAGE TOXIN",
         ),
         openai_api_key=os.getenv("OPENAI_API_KEY") or None,
         openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
@@ -65,3 +78,8 @@ def _env_bool(name: str, default: bool) -> bool:
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _env_list(name: str, default: str) -> list[str]:
+    value = os.getenv(name, default)
+    return [item.strip() for item in value.split(",") if item.strip()]

@@ -37,6 +37,9 @@ cp .env.example .env
 Les secrets restent dans `.env`:
 
 - `OPENAI_API_KEY`: active la generation LLM. Sans cle, AniPulse utilise un brouillon de fallback pour la demo.
+- `ANIPULSE_SOURCE`: `sample` pour `data/x_samples.json`, `x-api` pour l'API X.
+- `X_API_TOKEN`, `X_ACCOUNTS`, `X_MAX_RESULTS`: activent la collecte X reelle.
+- `ANIPULSE_TRACKED_TITLES`: titres anime a detecter dans les tweets.
 - `NOTION_TOKEN` et `NOTION_CONTENT_CALENDAR_DB_ID`: activent l'ecriture dans le planning Notion.
 - `NOTION_FALLBACK_PAGE_ID`: page Notion parent utilisee si la database calendrier est indisponible.
 - `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`: activent le recap email.
@@ -59,6 +62,12 @@ Ecriture Notion + email, si les variables sont configurees:
 
 ```bash
 anipulse --write
+```
+
+Collecte depuis l'API X:
+
+```bash
+ANIPULSE_SOURCE=x-api anipulse --dry-run --json
 ```
 
 Export de secours JSON + Markdown:
