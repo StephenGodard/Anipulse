@@ -1,105 +1,166 @@
 # AniPulse
 
-Agent autonome de content factory pour AnimeSphere.
+AniPulse is an agentic content factory built for AnimeSphere.
 
-AniPulse remplit chaque jour le planning editorial avec des contenus a valider:
+It turns anime community signals into a validated editorial pipeline: it monitors X/Twitter influencer accounts, detects trending anime, checks that each anime exists on AnimeSphere, generates platform-specific content with OpenAI, schedules it in Notion, and sends a Resend email recap.
 
-- idees SEO et articles anime de saison;
-- scripts TikTok/Reels;
-- posts X/Twitter reactifs;
-- contenus Reddit ou Instagram en bonus.
+AniPulse does not auto-post on social platforms. It creates drafts and calendar items with a human validation step.
 
-AniPulse ne publie pas automatiquement. Il prepare, programme et met les contenus en `A valider`; Stephen relit, valide et publie.
+![AniPulse architecture](assets/diagram-anipulse.png)
 
-## MVP
+## Why
 
-Le MVP est volontairement Python-first:
+AnimeSphere needs repeatable acquisition channels around anime discovery and seasonal anime trends. Manually monitoring the community, choosing relevant titles, writing posts, planning publication slots, and sending recap notes is time-consuming.
 
-1. Lire `data/x_samples.json`, compose de posts X copies/colles.
-2. Verifier que les anime detectes existent sur AnimeSphere via `https://animesphere.io/api/anime/search?title=`.
-3. Scorer les opportunites selon la pertinence AnimeSphere et les signaux fan/react.
-4. Generer 4 contenus par run: 1 SEO, 1 TikTok, 2 X/Twitter.
-5. Creer une page Notion par contenu dans le planning global avec le statut `A valider`.
-6. Envoyer un recap email via Resend quand la configuration est presente.
-7. Laisser la validation humaine avant publication.
+AniPulse compresses that workflow into one daily agent run.
+
+## MVP Scope
+
+The hackathon MVP covers the full content-planning loop:
+
+1. Collect tweets from selected anime influencer accounts over the last 24 hours.
+2. Detect candidate anime titles from a configurable watchlist.
+3. Verify that the anime exists on AnimeSphere through the public search endpoint.
+4. Rank candidates using community engagement and fan/react signals.
+5. Generate four content drafts per run:
+   - two X/Twitter react posts;
+   - one SEO article draft;
+   - one TikTok script.
+6. Create one Notion calendar item per generated content draft.
+7. Send a Resend email recap.
+8. Export JSON and Markdown backup files.
+
+## Architecture
+
+AniPulse is organized as a simple Python pipeline:
+
+- **Community Content Scraper**: fetches recent tweets from influencer accounts through the X API.
+- **TrendAnalyzer**: scores tweets using engagement, media count, fan/react vocabulary, and AnimeSphere availability.
+- **AnimeSphere lookup**: checks the public AnimeSphere API before generating content.
+- **OpenAI generation**: writes platform-specific drafts with a fan/community tone.
+- **CommunicationPlanner**: schedules content into Notion with platform tags, dates, validation status, AnimeSphere links, and source tweet links.
+- **Resend digest**: sends a summary email after each run.
+
+The default influencer watchlist is:
+
+```env
+X_ACCOUNTS=shirotaku_fr,Tokanim_FR,gaak_fr,animotaku_fr
+```
+
+In the last measured 24h window, these accounts represented about **499,000 cumulative impressions** across 30 tweets.
 
 ## Installation
 
 ```bash
 python3 -m venv .venv
-. .venv/bin/activate
+source .venv/bin/activate
 pip install -e .
 cp .env.example .env
 ```
 
 ## Configuration
 
-Les secrets restent dans `.env`:
+Secrets stay in `.env`.
 
-- `OPENAI_API_KEY`: active la generation LLM. Sans cle, AniPulse utilise un brouillon de fallback pour la demo.
-- `ANIPULSE_SOURCE`: `sample` pour `data/x_samples.json`, `x-api` pour l'API X.
-- `X_API_TOKEN`, `X_ACCOUNTS`, `X_MAX_RESULTS`, `X_LOOKBACK_HOURS`: activent la collecte X reelle sur les derniers tweets des comptes suivis.
-- `ANIPULSE_TRACKED_TITLES`: titres anime a detecter dans les tweets.
-- `NOTION_TOKEN` et `NOTION_CONTENT_CALENDAR_DB_ID`: activent l'ecriture dans le planning Notion.
-- `NOTION_FALLBACK_PAGE_ID`: page Notion parent utilisee si la database calendrier est indisponible.
-- `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`: activent le recap email.
+Required for the full workflow:
 
-## Utilisation
+- `X_API_TOKEN`: X API bearer token.
+- `OPENAI_API_KEY`: enables content generation.
+- `NOTION_TOKEN`: Notion integration token.
+- `NOTION_CONTENT_CALENDAR_DB_ID`: Notion database used as the planning calendar.
+- `RESEND_API_KEY`: enables the email recap.
+- `RESEND_FROM_EMAIL`: sender email.
+- `RESEND_TO_EMAIL`: recipient email.
 
-Dry-run lisible:
+Useful runtime variables:
 
-```bash
-anipulse --dry-run
-```
+- `ANIPULSE_SOURCE`: `sample` or `x-api`.
+- `ANIPULSE_DAILY_LIMIT`: number of drafts to generate per run.
+- `X_ACCOUNTS`: comma-separated influencer accounts.
+- `X_LOOKBACK_HOURS`: tweet collection window, default `24`.
+- `ANIPULSE_TRACKED_TITLES`: comma-separated anime titles to detect in tweets.
+- `NOTION_FALLBACK_PAGE_ID`: fallback parent page if the Notion database is unavailable.
 
-Dry-run JSON:
+## Run Locally
 
-```bash
-anipulse --dry-run --json
-```
-
-Ecriture Notion + email, si les variables sont configurees:
-
-```bash
-anipulse --write
-```
-
-Workflow complet en local, avec collecte X API, creation Notion, email Resend et exports:
+Full local workflow:
 
 ```bash
 ANIPULSE_SOURCE=x-api anipulse --write --limit 4 --export-dir exports
 ```
 
-Collecte depuis l'API X:
+This command runs:
+
+```text
+X API -> Trend analysis -> AnimeSphere lookup -> OpenAI generation -> Notion planning -> Resend email -> JSON/Markdown exports
+```
+
+Dry-run without external writes:
 
 ```bash
 ANIPULSE_SOURCE=x-api anipulse --dry-run --json
 ```
 
-Export de secours JSON + Markdown:
+Fallback sample mode:
 
 ```bash
-anipulse --dry-run --export-dir exports
+anipulse --dry-run --json
 ```
 
-Test email Resend sans recreer d'events Notion:
+Email-only test without creating new Notion events:
 
 ```bash
 anipulse --send-email --skip-notion --limit 4 --export-dir exports
 ```
 
-## Execution quotidienne
+## Daily Automation
 
-Un workflow GitHub Actions est disponible dans `.github/workflows/anipulse-daily.yml`.
-Il est planifie tous les jours a 08:30 Europe/Paris (`06:30 UTC`) et lance le workflow complet avec `ANIPULSE_SOURCE=x-api`.
+GitHub Actions workflow:
 
-Pour activer l'ecriture Notion et le recap Resend, configurer:
+```text
+.github/workflows/anipulse-daily.yml
+```
 
-- secrets: `X_API_TOKEN`, `OPENAI_API_KEY`, `NOTION_TOKEN`, `NOTION_CONTENT_CALENDAR_DB_ID`, `RESEND_API_KEY`;
-- variables: `ANIPULSE_DRY_RUN=false`, `NOTION_FALLBACK_PAGE_ID`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`.
+It runs every day at **08:30 Europe/Paris** (`06:30 UTC`) and executes:
 
-Pour la demo hackathon, `NOTION_CONTENT_CALENDAR_DB_ID` pointe vers la database dediee `Planning AniPulse`, creee sous `Plan de communication globale`.
+```bash
+anipulse --write --export-dir exports
+```
 
-## Nice-to-have
+GitHub secrets required:
 
-Hermes, OpenClaw ou d'autres outils video peuvent etre testes plus tard, uniquement si la boucle principale est stable.
+- `X_API_TOKEN`
+- `OPENAI_API_KEY`
+- `NOTION_TOKEN`
+- `NOTION_CONTENT_CALENDAR_DB_ID`
+- `RESEND_API_KEY`
+
+GitHub variables required:
+
+- `ANIPULSE_DRY_RUN=false`
+- `NOTION_FALLBACK_PAGE_ID`
+- `RESEND_FROM_EMAIL`
+- `RESEND_TO_EMAIL`
+
+## Demo Flow
+
+1. Show influencer accounts as the community signal source.
+2. Run the local command or show the latest successful run.
+3. Open the generated Notion items in `Planning AniPulse`.
+4. Show platform tags: `X / Twitter`, `SEO`, `TikTok`.
+5. Show the AnimeSphere URL and the source tweet URL.
+6. Show the Resend recap email.
+
+## Current Limitations
+
+- No social auto-posting yet.
+- Anime title detection uses a configurable watchlist, not full NLP entity extraction.
+- Visual extraction is limited to metadata and source links.
+- Video generation through Hermes/OpenClaw is a next step, not part of this MVP.
+
+## Next Steps
+
+- Add duplicate prevention across daily runs.
+- Add richer title/entity extraction for anime names.
+- Add video brief generation for Hermes/OpenClaw.
+- Add per-platform performance feedback loops.
