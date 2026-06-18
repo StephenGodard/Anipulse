@@ -57,6 +57,7 @@ class NotionCalendarWriter:
                 "Type contenu": {"select": {"name": draft.content_type}},
                 "Validation": {"select": {"name": draft.validation_status}},
                 "Lien AnimeSphere": {"url": draft.anime_url},
+                "Lien source": {"url": draft.source_url},
                 "Date": {"date": {"start": draft.scheduled_at.isoformat()}},
             },
             "children": [
