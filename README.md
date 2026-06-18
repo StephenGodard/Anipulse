@@ -38,6 +38,7 @@ Les secrets restent dans `.env`:
 
 - `OPENAI_API_KEY`: active la generation LLM. Sans cle, AniPulse utilise un brouillon de fallback pour la demo.
 - `NOTION_TOKEN` et `NOTION_CONTENT_CALENDAR_DB_ID`: activent l'ecriture dans le planning Notion.
+- `NOTION_FALLBACK_PAGE_ID`: page Notion parent utilisee si la database calendrier est indisponible.
 - `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`: activent le recap email.
 
 ## Utilisation
@@ -75,6 +76,8 @@ Pour activer l'ecriture Notion et le recap Resend, configurer:
 
 - secrets: `OPENAI_API_KEY`, `NOTION_TOKEN`, `NOTION_CONTENT_CALENDAR_DB_ID`, `RESEND_API_KEY`;
 - variables: `ANIPULSE_DRY_RUN=false`, `NOTION_FALLBACK_PAGE_ID`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`.
+
+Pour la demo hackathon, `NOTION_CONTENT_CALENDAR_DB_ID` pointe vers la database dediee `Planning AniPulse`, creee sous `Plan de communication globale`.
 
 ## Nice-to-have
 
