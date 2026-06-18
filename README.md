@@ -64,6 +64,12 @@ Ecriture Notion + email, si les variables sont configurees:
 anipulse --write
 ```
 
+Workflow complet en local, avec collecte X API, creation Notion, email Resend et exports:
+
+```bash
+ANIPULSE_SOURCE=x-api anipulse --write --limit 4 --export-dir exports
+```
+
 Collecte depuis l'API X:
 
 ```bash
@@ -85,11 +91,11 @@ anipulse --send-email --skip-notion --limit 4 --export-dir exports
 ## Execution quotidienne
 
 Un workflow GitHub Actions est disponible dans `.github/workflows/anipulse-daily.yml`.
-Par defaut il tourne en dry-run via `ANIPULSE_DRY_RUN=true`.
+Il est planifie tous les jours a 08:30 Europe/Paris (`06:30 UTC`) et lance le workflow complet avec `ANIPULSE_SOURCE=x-api`.
 
 Pour activer l'ecriture Notion et le recap Resend, configurer:
 
-- secrets: `OPENAI_API_KEY`, `NOTION_TOKEN`, `NOTION_CONTENT_CALENDAR_DB_ID`, `RESEND_API_KEY`;
+- secrets: `X_API_TOKEN`, `OPENAI_API_KEY`, `NOTION_TOKEN`, `NOTION_CONTENT_CALENDAR_DB_ID`, `RESEND_API_KEY`;
 - variables: `ANIPULSE_DRY_RUN=false`, `NOTION_FALLBACK_PAGE_ID`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`.
 
 Pour la demo hackathon, `NOTION_CONTENT_CALENDAR_DB_ID` pointe vers la database dediee `Planning AniPulse`, creee sous `Plan de communication globale`.
