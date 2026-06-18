@@ -39,6 +39,7 @@ class AniPulsePipeline:
         notion_ids = NotionCalendarWriter(
             self.settings.notion_token,
             self.settings.notion_content_calendar_db_id,
+            self.settings.notion_fallback_page_id,
         ).write(drafts, dry_run=dry_run)
 
         ResendDigestMailer(

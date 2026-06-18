@@ -65,6 +65,8 @@ def main() -> None:
         print(draft.digest_line())
     if result.notion_page_ids:
         print(f"Created {len(result.notion_page_ids)} Notion page(s).")
+        for page_id in result.notion_page_ids:
+            print(f"- Notion page: https://app.notion.com/p/{page_id.replace('-', '')}")
     elif dry_run:
         print("Dry-run enabled: no Notion page or Resend email was created.")
 

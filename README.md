@@ -74,7 +74,7 @@ Par defaut il tourne en dry-run via `ANIPULSE_DRY_RUN=true`.
 Pour activer l'ecriture Notion et le recap Resend, configurer:
 
 - secrets: `OPENAI_API_KEY`, `NOTION_TOKEN`, `NOTION_CONTENT_CALENDAR_DB_ID`, `RESEND_API_KEY`;
-- variables: `ANIPULSE_DRY_RUN=false`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`.
+- variables: `ANIPULSE_DRY_RUN=false`, `NOTION_FALLBACK_PAGE_ID`, `RESEND_FROM_EMAIL`, `RESEND_TO_EMAIL`.
 
 ## Nice-to-have
 

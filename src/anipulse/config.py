@@ -23,6 +23,7 @@ class Settings:
     openai_model: str
     notion_token: str | None
     notion_content_calendar_db_id: str | None
+    notion_fallback_page_id: str | None
     resend_api_key: str | None
     resend_from_email: str | None
     resend_to_email: str | None
@@ -52,6 +53,7 @@ def load_settings() -> Settings:
         openai_model=os.getenv("OPENAI_MODEL", "gpt-4.1-mini"),
         notion_token=os.getenv("NOTION_TOKEN") or None,
         notion_content_calendar_db_id=os.getenv("NOTION_CONTENT_CALENDAR_DB_ID") or None,
+        notion_fallback_page_id=os.getenv("NOTION_FALLBACK_PAGE_ID") or None,
         resend_api_key=os.getenv("RESEND_API_KEY") or None,
         resend_from_email=os.getenv("RESEND_FROM_EMAIL") or None,
         resend_to_email=os.getenv("RESEND_TO_EMAIL") or None,
