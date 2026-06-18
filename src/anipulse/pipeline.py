@@ -75,5 +75,6 @@ class AniPulsePipeline:
                 accounts=self.settings.x_accounts,
                 tracked_titles=self.settings.tracked_titles,
                 max_results=self.settings.x_max_results,
+                lookback_hours=self.settings.x_lookback_hours,
             ).load()
         return XSampleSource(self.settings.source_file).load()

@@ -23,6 +23,7 @@ class Settings:
     x_bearer_token: str | None
     x_accounts: list[str]
     x_max_results: int
+    x_lookback_hours: int
     tracked_titles: list[str]
     openai_api_key: str | None
     openai_model: str
@@ -58,6 +59,7 @@ def load_settings() -> Settings:
         x_bearer_token=os.getenv("X_API_TOKEN") or os.getenv("X_BEARER_TOKEN") or None,
         x_accounts=_env_list("X_ACCOUNTS", default="shirotaku_fr,Tokanim_FR,gaak_fr,animotaku_fr"),
         x_max_results=int(os.getenv("X_MAX_RESULTS", "10")),
+        x_lookback_hours=int(os.getenv("X_LOOKBACK_HOURS", "24")),
         tracked_titles=_env_list(
             "ANIPULSE_TRACKED_TITLES",
             default="Re:Zero,Classroom of the Elite,Black Clover,Marriagetoxin,MARRIAGE TOXIN",

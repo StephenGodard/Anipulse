@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import requests
 
@@ -28,11 +28,13 @@ class XApiSource:
         accounts: list[str],
         tracked_titles: list[str],
         max_results: int,
+        lookback_hours: int = 24,
     ) -> None:
         self.bearer_token = bearer_token
         self.accounts = accounts
         self.tracked_titles = tracked_titles
         self.max_results = max(5, min(max_results, 100))
+        self.lookback_hours = max(1, lookback_hours)
 
     def load(self) -> list[XSample]:
         samples: list[XSample] = []
@@ -66,6 +68,7 @@ class XApiSource:
             headers=self._headers(),
             params={
                 "max_results": self.max_results,
+                "start_time": self._start_time(),
                 "exclude": "retweets,replies",
                 "tweet.fields": "created_at,public_metrics,attachments",
                 "expansions": "attachments.media_keys",
@@ -79,6 +82,10 @@ class XApiSource:
 
         samples: list[XSample] = []
         for tweet in payload.get("data", []):
+            created_at = self._created_at(tweet.get("created_at"))
+            if created_at < self._min_created_at():
+                continue
+
             titles = self._candidate_titles(tweet.get("text", ""))
             if not titles:
                 continue
@@ -87,7 +94,7 @@ class XApiSource:
             samples.append(
                 XSample(
                     source_account=username,
-                    posted_at=self._created_at(tweet.get("created_at")),
+                    posted_at=created_at,
                     text=tweet.get("text", ""),
                     candidate_titles=titles,
                     metrics=XMetrics(
@@ -113,6 +120,12 @@ class XApiSource:
         if not value:
             return datetime.now(timezone.utc)
         return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+    def _min_created_at(self) -> datetime:
+        return datetime.now(timezone.utc) - timedelta(hours=self.lookback_hours)
+
+    def _start_time(self) -> str:
+        return self._min_created_at().isoformat(timespec="seconds").replace("+00:00", "Z")
 
     def _media_keys(self, payload: dict) -> dict[str, list[str]]:
         by_tweet: dict[str, list[str]] = {}
