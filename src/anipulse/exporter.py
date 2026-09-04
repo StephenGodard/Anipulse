@@ -42,6 +42,7 @@ class DraftExporter:
                     f"- Type: {draft.content_type}",
                     f"- Anime: {draft.anime_title}",
                     f"- URL AnimeSphere: {draft.anime_url}",
+                    f"- Image anime: {draft.image_url or 'A definir'}",
                     f"- Date planifiee: {draft.scheduled_at.isoformat()}",
                     f"- Statut: {draft.validation_status}",
                     f"- Angle: {draft.angle}",

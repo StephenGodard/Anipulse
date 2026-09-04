@@ -32,6 +32,7 @@ class ContentPlanner:
                     title=self._title(platform, candidate.anime.title),
                     anime_title=candidate.anime.title,
                     anime_url=candidate.anime.public_url,
+                    image_url=candidate.anime.image_url,
                     source_url=candidate.sample.url,
                     scheduled_at=scheduled_at,
                     angle=self._angle(platform, candidate),

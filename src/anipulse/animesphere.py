@@ -25,7 +25,12 @@ class AnimeSphereClient:
         if not public_url:
             return None
 
-        return AnimeMatch(title=anime_title, public_url=public_url, raw=item)
+        return AnimeMatch(
+            title=anime_title,
+            public_url=public_url,
+            image_url=self._image_url(item),
+            raw=item,
+        )
 
     def _first_item(self, payload: object) -> dict | None:
         if isinstance(payload, list) and payload:
@@ -49,4 +54,26 @@ class AnimeSphereClient:
         if isinstance(slug, str) and slug:
             return f"https://animesphere.io/anime/{slug}"
 
+        return None
+
+    def _image_url(self, item: dict) -> str | None:
+        """Extract the first usable anime artwork URL from API variants."""
+        image_keys = (
+            "imageUrl", "image_url", "posterUrl", "poster_url", "coverUrl",
+            "cover_url", "thumbnailUrl", "thumbnail_url", "image", "poster", "cover",
+        )
+        for key in image_keys:
+            value = item.get(key)
+            if isinstance(value, str) and value.startswith(("http://", "https://")):
+                return value
+            if isinstance(value, dict):
+                nested = self._image_url(value)
+                if nested:
+                    return nested
+
+        for value in item.values():
+            if isinstance(value, dict):
+                nested = self._image_url(value)
+                if nested:
+                    return nested
         return None

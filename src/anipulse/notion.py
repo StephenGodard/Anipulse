@@ -61,6 +61,7 @@ class NotionCalendarWriter:
                 "Date": {"date": {"start": draft.scheduled_at.isoformat()}},
             },
             "children": [
+                *self._image_block(draft),
                 {
                     "object": "block",
                     "type": "heading_2",
@@ -94,6 +95,7 @@ class NotionCalendarWriter:
 
     def _content_blocks(self, draft: ContentDraft) -> list[dict]:
         return [
+            *self._image_block(draft),
             {
                 "object": "block",
                 "type": "heading_2",
@@ -153,3 +155,12 @@ class NotionCalendarWriter:
                 },
             },
         ]
+
+    def _image_block(self, draft: ContentDraft) -> list[dict]:
+        if not draft.image_url:
+            return []
+        return [{
+            "object": "block",
+            "type": "image",
+            "image": {"type": "external", "external": {"url": draft.image_url}},
+        }]

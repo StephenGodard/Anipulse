@@ -54,7 +54,7 @@ def load_settings() -> Settings:
         timezone=os.getenv("ANIPULSE_TIMEZONE", "Europe/Paris"),
         animesphere_search_url=os.getenv(
             "ANIMESPHERE_SEARCH_URL",
-            "https://animesphere.io/api/anime/search?title=",
+            "https://animesphere.io/api/anime/search?pageNumber=1&pageSize=50&title=",
         ),
         x_bearer_token=os.getenv("X_API_TOKEN") or os.getenv("X_BEARER_TOKEN") or None,
         x_accounts=_env_list("X_ACCOUNTS", default="shirotaku_fr,Tokanim_FR,gaak_fr,animotaku_fr"),

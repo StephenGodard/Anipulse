@@ -37,6 +37,7 @@ class XSample(BaseModel):
 class AnimeMatch(BaseModel):
     title: str
     public_url: str
+    image_url: str | None = None
     raw: dict = Field(default_factory=dict)
 
 
@@ -53,6 +54,7 @@ class ContentDraft(BaseModel):
     title: str
     anime_title: str
     anime_url: str
+    image_url: str | None = None
     source_url: str | None = None
     scheduled_at: datetime
     angle: str
